@@ -70,9 +70,8 @@ void Katamari::init(const Card* card_array)
     int y;
     for( y=len-1; y>=0; y-- ){
         if( y==len-1 ){ continue; } //１周目はなにもしない。
-        if( card_array[y].suit != s ){
-            break;
-        }
+        if( card_array[y].invisible ){ break; }
+        if( card_array[y].suit != s ){ break; }
         if( card_array[y].n != card_array[y+1].n+1 ){
             break;
         }
@@ -141,10 +140,11 @@ void Board::init(int argc, const char* argv[])
     
     //場の設定
     for( int x=0; x<WIDTH; x++){
-        size_t len = strlen(argv[x])/2;
+        size_t len = strlen(argv[x])/3;
         for( size_t y=0; y<len; y++ ){
-            tableau[x][y].n    = c2i(argv[x][y*2+1]);
-            tableau[x][y].suit = c2s(argv[x][y*2]);
+            tableau[x][y].invisible = (argv[x][y*3]=='x'? true:false);
+            tableau[x][y].n    = c2i(argv[x][y*3+2]);
+            tableau[x][y].suit = c2s(argv[x][y*3+1]);
         }
     }
 
@@ -330,7 +330,7 @@ void FunctionTest::test_test()
     CPPUNIT_ASSERT_EQUAL(false, board.isComplete());
     board.print();
     
-    const char* argv[12] = {"s3s2s1","s1","s2","s3","s4","s5","s6","s7","s8","s9","-","s1s2s3s4s5s6s7s8s9s0"};
+    const char* argv[12] = {"xs3 s2 s1"," s1"," s2"," s3"," s4"," s5"," s6"," s7"," s8"," s9","-","s1s2s3s4s5s6s7s8s9s0"};
     board.init(12,argv);
     CPPUNIT_ASSERT_EQUAL(3,board.tableau[0][0].n);
     CPPUNIT_ASSERT_EQUAL(1,board.tableau[0][2].n);
@@ -339,8 +339,8 @@ void FunctionTest::test_test()
     Katamari k(board.tableau[0]);
     CPPUNIT_ASSERT_EQUAL(spade, k.s);
     CPPUNIT_ASSERT_EQUAL(1, k.top);
-    CPPUNIT_ASSERT_EQUAL(3, k.bottom);
-    CPPUNIT_ASSERT_EQUAL(0, k.position);
+    CPPUNIT_ASSERT_EQUAL(2, k.bottom);
+    CPPUNIT_ASSERT_EQUAL(1, k.position);
     
     Move  candidate[100];
     int   num;

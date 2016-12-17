@@ -195,6 +195,9 @@ void Board::print() const
         printf("\n");
         if( !exist ){break;}
     }
+    
+    //TODO: stock表示
+    
     printf("tesuu=%d\n", tesuu);
 
     //History
@@ -216,9 +219,6 @@ void Board::search_candidate(Move *candidate, int *num)const
         //printf("%d-%d\n", k[from].top, k[from].bottom);
     }
     
-    //TODO: kingからの部分山に積み重ねられるかチェック
-    //      塊全体でなくてよい。同一suit必須
-    
     //塊全体移動のチェック。suit違っても候補。
     for( int from=0; from<WIDTH; from++){
         for( int to=0; to<WIDTH; to++){
@@ -232,7 +232,31 @@ void Board::search_candidate(Move *candidate, int *num)const
             }
         }
     }
-
+    
+    //kingからの山に積み重ねられるかチェック
+    //塊全体でなくてよい。同一suit必須
+    for( int to=0; to<WIDTH; to++){
+        if( k[to].bottom==13 ){
+            for( int from=0; from<WIDTH; from++){
+                if( from==to ){ continue; }
+                if( k[from].bottom ==13 ){continue;}
+                if( k[from].top<k[to].top && k[to].top <= k[from].bottom ){
+                    //↑この条件で、塊全体移動は除外されている。
+                    Katamari partial_k = k[from];
+                    partial_k.bottom   = k[to].top-1;
+                    partial_k.position = k[from].position + (k[from].bottom - k[to].top+1);
+                    
+                    candidate[*num].from = from;
+                    candidate[*num].to   = to;
+                    candidate[*num].k    = partial_k;
+                    (*num)++;
+                    printf("from=%d, to=%d, %d-%d\n", from, to, partial_k.top, partial_k.bottom);
+                    //exit(0);
+                }
+            }
+        }
+    }
+    
     //empty spaceがある場合、塊を下す手を列挙
     //
     int x;

@@ -27,7 +27,7 @@ public:
 class Katamari{
 public:
     Suit   s;
-    int    position;  //bottom‚Ì”z—ñindex
+    int    position;  //bottomã®é…åˆ—index
     int    top;
     int    bottom;
     
@@ -42,7 +42,7 @@ class Move{
 public:
     int from;  //-1 means draw
     int to;
-    //int num;   //‰ò‚ğ•ªŠ„‚µ‚ÄAempty‚ÖˆÚ“®‚³‚¹‚é‚Æ‚«‚Ì–‡”Bto‚ªempty‚Å‚È‚¯‚ê‚Î0‚ğ“ü‚ê‚éB
+    //int num;   //å¡Šã‚’åˆ†å‰²ã—ã¦ã€emptyã¸ç§»å‹•ã•ã›ã‚‹ã¨ãã®æšæ•°ã€‚toãŒemptyã§ãªã‘ã‚Œã°0ã‚’å…¥ã‚Œã‚‹ã€‚
     Katamari k;
     bool isDraw()const{return from==-1;}
 };
@@ -50,7 +50,7 @@ public:
 /****************************************************************************/
 void Katamari::init(const Card* card_array)
 {
-    //‚Ü‚¸’·‚³‚ğƒ`ƒFƒbƒN
+    //ã¾ãšé•·ã•ã‚’ãƒã‚§ãƒƒã‚¯
     int len;
     for( len=0; ; len++){
         if( card_array[len].n == 0 ){
@@ -58,18 +58,18 @@ void Katamari::init(const Card* card_array)
         }
     }
     
-    //emptyƒ`ƒFƒbƒN
+    //emptyãƒã‚§ãƒƒã‚¯
     if( len==0 ){
         top = bottom = 0;
         return;
     }
     
-    //empty‚Å‚È‚¢B‰ò‚ğ‰ğÍB
+    //emptyã§ãªã„ã€‚å¡Šã‚’è§£æã€‚
     top = card_array[len-1].n;
     s = card_array[len-1].suit;
     int y;
     for( y=len-1; y>=0; y-- ){
-        if( y==len-1 ){ continue; } //‚Pü–Ú‚Í‚È‚É‚à‚µ‚È‚¢B
+        if( y==len-1 ){ continue; } //ï¼‘å‘¨ç›®ã¯ãªã«ã‚‚ã—ãªã„ã€‚
         if( card_array[y].suit != s ){
             break;
         }
@@ -93,7 +93,7 @@ public:
 
     Board(){init();}
     void init();
-    void init(int argc, const char* argv[]);  //main‚É“n‚³‚ê‚é‚à‚Ì‚©‚çargv[0]‚ğœ‚¢‚Ä“n‚·‚±‚Æ
+    void init(int argc, const char* argv[]);  //mainã«æ¸¡ã•ã‚Œã‚‹ã‚‚ã®ã‹ã‚‰argv[0]ã‚’é™¤ã„ã¦æ¸¡ã™ã“ã¨
     void print()const;
 
     bool isComplete()const{for(int x=0;x<WIDTH;x++)if(tableau[x][0].n!=0)return false; return true;}
@@ -139,7 +139,7 @@ void Board::init(int argc, const char* argv[])
     assert( argc>=11 );
     init();
     
-    //ê‚Ìİ’è
+    //å ´ã®è¨­å®š
     for( int x=0; x<WIDTH; x++){
         size_t len = strlen(argv[x])/2;
         for( size_t y=0; y<len; y++ ){
@@ -148,7 +148,7 @@ void Board::init(int argc, const char* argv[])
         }
     }
 
-    //ƒXƒgƒbƒN‚Ìİ’è
+    //ã‚¹ãƒˆãƒƒã‚¯ã®è¨­å®š
     assert(strcmp(argv[WIDTH],"-")==0);
     for( int i=WIDTH+1; i<argc; i++){
         assert(strlen(argv[i])==WIDTH*2);
@@ -213,7 +213,7 @@ void Board::search_candidate(Move *candidate, int *num)const
 void Board::doMove(const Move &m)
 {
     printf("Moving: %d->%d\n", m.from, m.to);
-    //to‚Ì‚‚³
+    //toã®é«˜ã•
     int to_hight;
     for( to_hight=0; ; to_hight++ ){
         if( tableau[m.to][to_hight].n==0 ){
@@ -221,17 +221,17 @@ void Board::doMove(const Move &m)
         }
     }
     
-    //ˆê‰ƒ`ƒFƒbƒN
+    //ä¸€å¿œãƒã‚§ãƒƒã‚¯
     assert(to_hight==0 || tableau[m.to][to_hight-1].n==m.k.bottom+1);
     
-    //ƒRƒs[&Á‹
+    //ã‚³ãƒ”ãƒ¼&æ¶ˆå»
     for( int from_y=m.k.position; from_y<=m.k.position+(m.k.bottom-m.k.top) ; to_hight++,from_y++ ){
         tableau[m.to][to_hight] = tableau[m.from][from_y];
         tableau[m.from][from_y].n = 0;
     }
     tesuu++;
     
-    //œ‹ƒ`ƒFƒbƒN
+    //é™¤å»ãƒã‚§ãƒƒã‚¯
     check_remove(m.to);
 }
 
@@ -285,7 +285,7 @@ int main(int argc, const char* argv[])
 }
 #else
 /****************************************************************************/
-//ƒeƒXƒgŠÖ”
+//ãƒ†ã‚¹ãƒˆé–¢æ•°
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -295,11 +295,11 @@ int main(int argc, const char* argv[])
 #include <cppunit/extensions/HelperMacros.h>
 /****************************************************************************/
 class FunctionTest : public CPPUNIT_NS::TestFixture{
-    //ƒeƒXƒgƒNƒ‰ƒX
-    CPPUNIT_TEST_SUITE(FunctionTest);//“o˜^‚ÌƒXƒ^[ƒg
+    //ãƒ†ã‚¹ãƒˆã‚¯ãƒ©ã‚¹
+    CPPUNIT_TEST_SUITE(FunctionTest);//ç™»éŒ²ã®ã‚¹ã‚¿ãƒ¼ãƒˆ
     CPPUNIT_TEST(test_test);
     CPPUNIT_TEST(test_search_candidate);
-    CPPUNIT_TEST_SUITE_END();//“o˜^‚ÌI—¹
+    CPPUNIT_TEST_SUITE_END();//ç™»éŒ²ã®çµ‚äº†
 
 protected:
     void test_test();
@@ -312,11 +312,11 @@ public:
 /****************************************************************************/
 CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTest);
 
-//ƒeƒXƒg‹N“®‚ÉÀs
+//ãƒ†ã‚¹ãƒˆèµ·å‹•æ™‚ã«å®Ÿè¡Œ
 void FunctionTest::setUp(){
 }
 
-//ƒeƒXƒgI—¹‚ÉÀs
+//ãƒ†ã‚¹ãƒˆçµ‚äº†æ™‚ã«å®Ÿè¡Œ
 void FunctionTest::testDown(){
 }
 /****************************************************************************/
@@ -358,20 +358,20 @@ int main(int argc, char* argv[])
 {
     CPPUNIT_NS::TestResult controller;
 
-    //Œ‹‰ÊûW
+    //çµæœåé›†
     CPPUNIT_NS::TestResultCollector result;
     controller.addListener(&result);
 
-    //“r’†Œ‹‰Ê‚ÌûW
+    //é€”ä¸­çµæœã®åé›†
     CPPUNIT_NS::BriefTestProgressListener progress;
     controller.addListener(&progress);
 
-    //ƒeƒXƒg‚ğ‘–‚ç‚¹‚éBƒeƒXƒg‚ğ“ü‚ê‚Ä‘–‚é
+    //ãƒ†ã‚¹ãƒˆã‚’èµ°ã‚‰ã›ã‚‹ã€‚ãƒ†ã‚¹ãƒˆã‚’å…¥ã‚Œã¦èµ°ã‚‹
     CPPUNIT_NS::TestRunner runner;
     runner.addTest( CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest() );
     runner.run(controller);
 
-    //Œ‹‰Ê‚ğ•W€o—Í‚É‚·‚éB
+    //çµæœã‚’æ¨™æº–å‡ºåŠ›ã«ã™ã‚‹ã€‚
     CPPUNIT_NS::CompilerOutputter outputter(&result,CPPUNIT_NS::stdCOut());
     outputter.write();
 

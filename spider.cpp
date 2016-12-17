@@ -11,6 +11,9 @@ typedef enum{
 }Suit;
 
 const char suit_char[] = {'s','h','d','c'};
+enum{
+    card_empty=0, card_unknown=-1,
+};
 class Card{
 public:
     
@@ -143,8 +146,13 @@ void Board::init(int argc, const char* argv[])
         size_t len = strlen(argv[x])/3;
         for( size_t y=0; y<len; y++ ){
             tableau[x][y].invisible = (argv[x][y*3]=='x'? true:false);
-            tableau[x][y].n    = c2i(argv[x][y*3+2]);
-            tableau[x][y].suit = c2s(argv[x][y*3+1]);
+            if( argv[x][y*3+2]=='x'){
+                tableau[x][y].n    = card_unknown;
+                tableau[x][y].suit = suit_unknown;
+            }else{
+                tableau[x][y].n    = c2i(argv[x][y*3+2]);
+                tableau[x][y].suit = c2s(argv[x][y*3+1]);
+            }
         }
     }
 
@@ -168,8 +176,12 @@ void Board::print() const
             if( tableau[x][y].n == 0 ){
                 printf("      ");
             }else if( tableau[x][y].invisible ){
-                printf(" =%c%c= ",suit_char[tableau[x][y].suit],
-                                 " 1234567890JQK*"[tableau[x][y].n]);
+                if( tableau[x][y].n == card_unknown ){
+                    printf(" =xx= ");
+                }else{
+                    printf(" =%c%c= ",suit_char[tableau[x][y].suit],
+                                     " 1234567890JQK*"[tableau[x][y].n]);
+                }
                 exist = true;
             }else{
                 printf("  %c%c  ",suit_char[tableau[x][y].suit],

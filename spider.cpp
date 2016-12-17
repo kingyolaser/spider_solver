@@ -21,8 +21,8 @@ public:
     int   n;
     bool  invisible;
     
-    Card(): suit(spade),n(1){}
-    Card(Suit s, int n_): suit(s), n(n_), invisible(true){}
+    Card(): suit(spade),n(1),invisible(false){}
+    Card(Suit s, int n_): suit(s), n(n_), invisible(false){}
 
 };
 
@@ -86,12 +86,13 @@ void Katamari::init(const Card* card_array)
 class Board{
 public:
     enum{
-        WIDTH = 10, STOCK_MAX=5,
+        WIDTH = 10, STOCK_MAX=5, HISTORY_MAX=300,
     };
 
     Card  tableau[WIDTH][104];
     int   tesuu;
     Card  stock[WIDTH][5];
+    Move  history[HISTORY_MAX];
 
     Board(){init();}
     void init();
@@ -195,6 +196,13 @@ void Board::print() const
         if( !exist ){break;}
     }
     printf("tesuu=%d\n", tesuu);
+
+    //History
+    printf("history: ");
+    for( int i=0; i<tesuu; i++){
+        printf("%d%d:", history[i].from, history[i].to);
+    }
+    printf("\n");
 }
 
 /****************************************************************************/
@@ -244,6 +252,8 @@ void Board::search_candidate(Move *candidate, int *num)const
 /****************************************************************************/
 void Board::inquire(int x, int y)
 {
+    print();
+
     Card ret;
     char buf[20];
     for(;;){
@@ -278,20 +288,24 @@ void Board::doMove(const Move &m)
         tableau[m.to][to_hight] = tableau[m.from][from_y];
         tableau[m.from][from_y].n = 0;
     }
+    assert(tesuu<HISTORY_MAX);
+    history[tesuu] = m;
     tesuu++;
     
     //移動元のtopを表にする。
     if( m.k.position >=1 ){
         if( tableau[m.from][m.k.position-1].invisible ){
-            tableau[m.from][m.k.position-1].invisible = false;
             if( tableau[m.from][m.k.position-1].n == card_unknown ){
                 inquire(m.from, m.k.position-1);
             }
+            tableau[m.from][m.k.position-1].invisible = false;
         }
     }
     
     //除去チェック
     check_remove(m.to);
+    
+    print();
 }
 
 /****************************************************************************/

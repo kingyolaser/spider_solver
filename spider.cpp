@@ -109,6 +109,7 @@ public:
     
     void inquire(int x, int y);
     void doMove(const Move &m);
+    void doDraw();
     void check_remove();
     void check_remove(int x);
     void undo();
@@ -214,7 +215,11 @@ void Board::print() const
     //History
     printf("history: ");
     for( int i=0; i<tesuu; i++){
-        printf("%d%d:", history[i].from, history[i].to);
+        if( history[i].isDraw() ){
+            printf("draw:");
+        }else{
+            printf("%d%d:", history[i].from, history[i].to);
+        }
     }
     printf("\n");
 }
@@ -281,6 +286,11 @@ void Board::search_candidate(Move *candidate, int *num)const
             }
         }
     }
+    
+    if( stock_remain>=1 && !existEmpty() ){
+        candidate[*num].from = -1;
+        (*num)++;
+    }
 
     printf("candidate num=%d\n", *num);
 }
@@ -306,43 +316,69 @@ void Board::inquire(int x, int y)
 /****************************************************************************/
 void Board::doMove(const Move &m)
 {
-    printf("Moving: %d->%d\n", m.from, m.to);
-    //toの高さ
-    int to_hight;
-    for( to_hight=0; ; to_hight++ ){
-        if( tableau[m.to][to_hight].n==0 ){
-            break;
+    if( ! m.isDraw() ){
+        printf("Moving: %d->%d\n", m.from, m.to);
+        //toの高さ
+        int to_hight;
+        for( to_hight=0; ; to_hight++ ){
+            if( tableau[m.to][to_hight].n==0 ){
+                break;
+            }
         }
-    }
+        
+        //一応チェック
+        assert(to_hight==0 || tableau[m.to][to_hight-1].n==m.k.bottom+1);
+        
+        //コピー&消去
+        for( int from_y=m.k.position; from_y<=m.k.position+(m.k.bottom-m.k.top) ; to_hight++,from_y++ ){
+            tableau[m.to][to_hight] = tableau[m.from][from_y];
+            tableau[m.from][from_y].n = 0;
+        }
+        
+        //移動元のtopを表にする。
+        if( m.k.position >=1 ){
+            if( tableau[m.from][m.k.position-1].invisible ){
+                if( tableau[m.from][m.k.position-1].n == card_unknown ){
+                    inquire(m.from, m.k.position-1);
+                }
+                tableau[m.from][m.k.position-1].invisible = false;
+            }
+        }
     
-    //一応チェック
-    assert(to_hight==0 || tableau[m.to][to_hight-1].n==m.k.bottom+1);
+        //除去チェック
+        check_remove(m.to);
     
-    //コピー&消去
-    for( int from_y=m.k.position; from_y<=m.k.position+(m.k.bottom-m.k.top) ; to_hight++,from_y++ ){
-        tableau[m.to][to_hight] = tableau[m.from][from_y];
-        tableau[m.from][from_y].n = 0;
+    }else{  //drawの場合
+        doDraw();
     }
+
     assert(tesuu<HISTORY_MAX);
     history[tesuu] = m;
     tesuu++;
-    
-    //移動元のtopを表にする。
-    if( m.k.position >=1 ){
-        if( tableau[m.from][m.k.position-1].invisible ){
-            if( tableau[m.from][m.k.position-1].n == card_unknown ){
-                inquire(m.from, m.k.position-1);
-            }
-            tableau[m.from][m.k.position-1].invisible = false;
-        }
-    }
-    
-    //除去チェック
-    check_remove(m.to);
-    
+
     print();
 }
 
+/****************************************************************************/
+void Board::doDraw()
+{
+    printf("### doDraw ###\n");
+    assert(stock_remain>=1);
+    
+    
+    for( int x=0; x<WIDTH; x++){
+        //既存の枚数チェック、その上に配る
+        int y;
+        for( y=0; ; y++ ){
+            if( tableau[x][y].n == 0 ){
+                assert(y>=1);
+                tableau[x][y] = stock[x][stock_remain-1];
+                break;
+            }
+        }
+    }
+    stock_remain--;
+}
 /****************************************************************************/
 void Board::check_remove(int x)
 {

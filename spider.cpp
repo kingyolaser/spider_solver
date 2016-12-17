@@ -303,6 +303,16 @@ void Board::check_remove(int x)
         for( int y=k.position; y<k.position+13; y++){
             tableau[x][y].n=0;
         }
+        
+        //その下のカードを開く
+        if( k.position>=1 ){
+            if( tableau[x][k.position-1].invisible ){
+                if( tableau[x][k.position-1].n == card_unknown ){
+                    inquire(x, k.position-1);
+                }
+                tableau[x][k.position-1].invisible = false;
+            }
+        }
     }
 }
 /****************************************************************************/

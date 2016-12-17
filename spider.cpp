@@ -99,11 +99,13 @@ public:
     void print()const;
 
     bool isComplete()const{for(int x=0;x<WIDTH;x++)if(tableau[x][0].n!=0)return false; return true;}
-    bool existEmpty()const{for(int x=0;x<WIDTH;x++)if(tableau[x][0].n==0)return true; return false;}
+    bool existEmpty()const{return getEmpty()!=-1;}
+    int  getEmpty()const{for(int x=0;x<WIDTH;x++)if(tableau[x][0].n==0)return x; return -1;}
     bool canMove(Move m)const;
     
     void search_candidate(Move *candidate, int *num)const;
     
+    void inquire(int x, int y);
     void doMove(const Move &m);
     void check_remove();
     void check_remove(int x);
@@ -206,6 +208,10 @@ void Board::search_candidate(Move *candidate, int *num)const
         //printf("%d-%d\n", k[from].top, k[from].bottom);
     }
     
+    //TODO: kingからの部分山に積み重ねられるかチェック
+    //      塊全体でなくてよい。同一suit必須
+    
+    //塊全体移動のチェック。suit違っても候補。
     for( int from=0; from<WIDTH; from++){
         for( int to=0; to<WIDTH; to++){
             if( from==to ){continue;}
@@ -214,13 +220,44 @@ void Board::search_candidate(Move *candidate, int *num)const
                 candidate[*num].from = from;
                 candidate[*num].to   = to;
                 candidate[*num].k    = k[from];
-                //candidate[*num].num  = 0;  //all katamari move
                 (*num)++;
             }
         }
     }
+
+    //empty spaceがある場合、塊を下す手を列挙
+    //
+    int x;
+    if( (x=getEmpty())!=-1 ){
+        for( int from=0; from<WIDTH; from++ ){
+            if( k[from].position != 0 ){ //塊は下す価値がある
+                candidate[*num].from = from;
+                candidate[*num].to   = x;
+                candidate[*num].k    = k[from];
+                (*num)++;
+            }
+        }
+    }
+
     printf("candidate num=%d\n", *num);
 }
+/****************************************************************************/
+void Board::inquire(int x, int y)
+{
+    Card ret;
+    char buf[20];
+    for(;;){
+        printf("input(%d,%d)> ",x,y);
+        fgets(buf, sizeof(buf), stdin );
+        ret.suit = c2s(buf[0]);
+        ret.n    = c2i(buf[1]);
+        if( ret.suit!=suit_unknown || ret.n!=card_unknown ){
+            tableau[x][y] = ret;
+            return;
+        }
+    }
+}
+
 /****************************************************************************/
 void Board::doMove(const Move &m)
 {
@@ -242,6 +279,16 @@ void Board::doMove(const Move &m)
         tableau[m.from][from_y].n = 0;
     }
     tesuu++;
+    
+    //移動元のtopを表にする。
+    if( m.k.position >=1 ){
+        if( tableau[m.from][m.k.position-1].invisible ){
+            tableau[m.from][m.k.position-1].invisible = false;
+            if( tableau[m.from][m.k.position-1].n == card_unknown ){
+                inquire(m.from, m.k.position-1);
+            }
+        }
+    }
     
     //除去チェック
     check_remove(m.to);

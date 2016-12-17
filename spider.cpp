@@ -92,6 +92,7 @@ public:
     Card  tableau[WIDTH][104];
     int   tesuu;
     Card  stock[WIDTH][5];
+    int   stock_remain;
     Move  history[HISTORY_MAX];
 
     Board(){init();}
@@ -137,6 +138,7 @@ void Board::init()
     memset(tableau, 0, sizeof(tableau));
     tesuu = 0;
     memset(stock, 0, sizeof(stock));
+    stock_remain = 0;
 }
 /****************************************************************************/
 void Board::init(int argc, const char* argv[])
@@ -164,9 +166,10 @@ void Board::init(int argc, const char* argv[])
     for( int i=WIDTH+1; i<argc; i++){
         assert(strlen(argv[i])==WIDTH*2);
         for( int x=0; x<WIDTH; x++){
-            stock[x][i].n    = c2i(argv[i][x*2+1]);
-            stock[x][i].suit = c2s(argv[i][x*2]);
+            stock[x][stock_remain].n    = c2i(argv[i][x*2+1]);
+            stock[x][stock_remain].suit = c2s(argv[i][x*2]);
         }
+        stock_remain++;
     }
 }
 /****************************************************************************/
@@ -196,9 +199,17 @@ void Board::print() const
         if( !exist ){break;}
     }
     
-    //TODO: stock表示
+    //stock表示
+    printf("stock:");
+    for( int i=0; i<stock_remain; i++){
+        printf("\n");
+        for( int x=0; x<WIDTH; x++){
+            printf("%c%c ", suit_char[stock[x][i].suit],
+                            " 1234567890JQK*"[stock[x][i].n]);
+        }
+    }
     
-    printf("tesuu=%d\n", tesuu);
+    printf("\ntesuu=%d\n", tesuu);
 
     //History
     printf("history: ");

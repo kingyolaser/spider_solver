@@ -83,6 +83,16 @@ void Katamari::init(const Card* card_array)
     bottom   = card_array[position].n;
 }
 /****************************************************************************/
+#define MAX_REMOVE 7  //１手での最大片付山数。draw時に配ったカードで同時に片づけられたケース。
+class History{
+public:
+    Move m;
+    bool frompile_fliped;
+    int  remove_num;
+    int  remove_x[MAX_REMOVE];
+    Suit remove_suit[MAX_REMOVE];
+};
+/****************************************************************************/
 class Board{
 public:
     enum{
@@ -93,7 +103,7 @@ public:
     int   tesuu;
     Card  stock[WIDTH][5];
     int   stock_remain;
-    Move  history[HISTORY_MAX];
+    History  history[HISTORY_MAX];
 
     Board(){init();}
     void init();
@@ -215,10 +225,10 @@ void Board::print() const
     //History
     printf("history: ");
     for( int i=0; i<tesuu; i++){
-        if( history[i].isDraw() ){
+        if( history[i].m.isDraw() ){
             printf("draw:");
         }else{
-            printf("%d%d:", history[i].from, history[i].to);
+            printf("%d%d:", history[i].m.from, history[i].m.to);
         }
     }
     printf("\n");
@@ -353,7 +363,7 @@ void Board::doMove(const Move &m)
     }
 
     assert(tesuu<HISTORY_MAX);
-    history[tesuu] = m;
+    history[tesuu].m = m;
     tesuu++;
 
     print();

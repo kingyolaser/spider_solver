@@ -91,6 +91,9 @@ public:
     int  remove_num;
     int  remove_x[MAX_REMOVE];
     Suit remove_suit[MAX_REMOVE];
+    bool removepile_fliped[MAX_REMOVE]; //除去後にその下をめくったかどうか
+    
+    void init(){ frompile_fliped=false; remove_num=0; }
 };
 /****************************************************************************/
 class Board{
@@ -119,9 +122,8 @@ public:
     
     void inquire(int x, int y);
     void doMove(const Move &m);
-    void doDraw();
-    void check_remove();
-    void check_remove(int x);
+    void doDraw(History &h);
+    void check_remove(int x, History &h);
     void undo();
 };
 /****************************************************************************/
@@ -326,6 +328,10 @@ void Board::inquire(int x, int y)
 /****************************************************************************/
 void Board::doMove(const Move &m)
 {
+    assert(tesuu<HISTORY_MAX);
+    history[tesuu].init();
+    history[tesuu].m = m;
+
     if( ! m.isDraw() ){
         printf("Moving: %d->%d\n", m.from, m.to);
         //toの高さ
@@ -356,21 +362,20 @@ void Board::doMove(const Move &m)
         }
     
         //除去チェック
-        check_remove(m.to);
+        check_remove(m.to, history[tesuu]);
     
     }else{  //drawの場合
-        doDraw();
+        doDraw(history[tesuu]);
     }
 
-    assert(tesuu<HISTORY_MAX);
-    history[tesuu].m = m;
+    //TODO: 山片づけのHistory記録
     tesuu++;
 
     print();
 }
 
 /****************************************************************************/
-void Board::doDraw()
+void Board::doDraw(History &h)
 {
     printf("### doDraw ###\n");
     assert(stock_remain>=1);
@@ -388,9 +393,10 @@ void Board::doDraw()
         }
     }
     stock_remain--;
+    //TODO: 山片づけチェック
 }
 /****************************************************************************/
-void Board::check_remove(int x)
+void Board::check_remove(int x, History &h)
 {
     Katamari k(tableau[x]);
     if( k.top==1 && k.bottom==13 ){
@@ -406,6 +412,7 @@ void Board::check_remove(int x)
                     inquire(x, k.position-1);
                 }
                 tableau[x][k.position-1].invisible = false;
+                h.frompile_fliped = true;
             }
         }
     }

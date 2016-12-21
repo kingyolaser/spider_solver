@@ -174,14 +174,14 @@ void Board::init(int argc, const char* argv[])
 
     //ストックの設定
     assert(strcmp(argv[WIDTH],"-")==0);
-    for( int i=WIDTH+1; i<argc; i++){
+    for( int i=argc-1; i>=WIDTH+1; i--){
         assert(strlen(argv[i])==WIDTH*2);
         for( int x=0; x<WIDTH; x++){
-            stock[x][stock_remain].n    = c2i(argv[i][x*2+1]);
-            stock[x][stock_remain].suit = c2s(argv[i][x*2]);
+            stock[x][i-WIDTH-1].n    = c2i(argv[i][x*2+1]);
+            stock[x][i-WIDTH-1].suit = c2s(argv[i][x*2]);
         }
-        stock_remain++;
     }
+    stock_remain = argc-WIDTH-1;
 }
 /****************************************************************************/
 void Board::print() const

@@ -462,6 +462,7 @@ void Board::undo()
         tableau[h.m.to][top_y].n = card_empty;
         top_y--;
     }
+    tesuu --;
 }
 /****************************************************************************/
 void solve(Board &board)

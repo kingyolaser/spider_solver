@@ -179,11 +179,11 @@ void Board::init(int argc, const char* argv[])
     for( int i=argc-1; i>=WIDTH+1; i--){
         assert(strlen(argv[i])==WIDTH*2);
         for( int x=0; x<WIDTH; x++){
-            stock[x][i-WIDTH-1].n    = c2i(argv[i][x*2+1]);
-            stock[x][i-WIDTH-1].suit = c2s(argv[i][x*2]);
+            stock[x][stock_remain].n    = c2i(argv[i][x*2+1]);
+            stock[x][stock_remain].suit = c2s(argv[i][x*2]);
         }
+        stock_remain++;
     }
-    stock_remain = argc-WIDTH-1;
 }
 /****************************************************************************/
 void Board::print() const
@@ -358,6 +358,7 @@ void Board::doMove(const Move &m)
                     inquire(m.from, m.k.position-1);
                 }
                 tableau[m.from][m.k.position-1].invisible = false;
+                history[tesuu].frompile_fliped = true;
             }
         }
     
@@ -420,9 +421,47 @@ void Board::check_remove(int x, History &h)
 /****************************************************************************/
 void Board::undo()
 {
+    printf("### undo ###\n");
+    
+    assert(tesuu>=1);
+    History &h = history[tesuu-1];
+
     //TODO
-    printf("undo not supported yet\n");
-    exit(1);
+    if( h.remove_num>=1 ){
+        //TODO
+        printf("not supoorted yet.\n");
+        exit(1);
+    }
+
+    if( h.m.isDraw() ){
+        //TODO
+        printf("not supoorted yet.\n");
+        exit(1);
+    }
+
+    //移動先(undoの移動元)の高さチェック
+    int top_y = -1;
+    for( int y=0; ; y++){ //topのyを算出
+        if( tableau[h.m.to][y].n == card_empty ){
+            top_y = y-1;
+            break;
+        }
+    }
+    assert(tableau[h.m.to][top_y].n == h.m.k.top);
+
+    if( h.frompile_fliped ){
+        //移動元のtopを裏にする。
+        assert(h.m.k.position>=1);
+        tableau[h.m.from][h.m.k.position-1].invisible = true;
+    }
+
+    //塊の逆移動
+    for( int i=h.m.k.bottom-h.m.k.top; i>=0 ;i--){
+        assert(top_y>=0);
+        tableau[h.m.from][h.m.k.position+i] = tableau[h.m.to][top_y];
+        tableau[h.m.to][top_y].n = card_empty;
+        top_y--;
+    }
 }
 /****************************************************************************/
 void solve(Board &board)
@@ -516,7 +555,12 @@ void FunctionTest::test_test()
     Move  candidate[100];
     int   num;
     board.search_candidate(candidate, &num);
-    CPPUNIT_ASSERT_EQUAL(9,num);
+    CPPUNIT_ASSERT_EQUAL(10,num);
+
+    board.doMove(candidate[0]);
+    board.print();
+    board.undo();
+    board.print();
 }
 /****************************************************************************/
 void FunctionTest::test_search_candidate()

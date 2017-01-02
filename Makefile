@@ -1,9 +1,9 @@
 
 spider: spider.cpp
-	g++ -Wall -O3 -o $@ $<
+	g++ -Wall -O3 -o $@ $< -lcrypto
 
 spider_test: spider.cpp
-	g++ -Wall -DTEST -o $@ $< -lcppunit
+	g++ -Wall -DTEST -o $@ $< -lcrypto -lcppunit
 
 test: spider
 	./$< "xxxxsqxsj s0" " s1" " s2" " s3" " s4" " s5" " s6" " s7" " s8" " s9"  -

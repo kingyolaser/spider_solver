@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <openssl/md5.h>
 
 /****************************************************************************/
 typedef enum{
@@ -92,6 +93,7 @@ public:
     int  remove_x[MAX_REMOVE];
     Suit remove_suit[MAX_REMOVE];
     bool removepile_fliped[MAX_REMOVE]; //除去後にその下をめくったかどうか
+    unsigned char md5sum[MD5_DIGEST_LENGTH];  //ループチェック用
     
     void init(){ frompile_fliped=false; remove_num=0; }
 };
@@ -117,6 +119,8 @@ public:
     bool existEmpty()const{return getEmpty()!=-1;}
     int  getEmpty()const{for(int x=0;x<WIDTH;x++)if(tableau[x][0].n==0)return x; return -1;}
     bool canMove(Move m)const;
+    void getHash(unsigned char getHash[MD5_DIGEST_LENGTH])const;
+    bool isLooping()const;
     
     void search_candidate(Move *candidate, int *num)const;
     
@@ -235,13 +239,74 @@ void Board::print() const
     }
     printf("\n");
 }
+/****************************************************************************/
+void Board::getHash(unsigned char getHash[MD5_DIGEST_LENGTH])const
+{
+    MD5_CTX c;
+    int r;
+    char buf[80];
+    
+    r = MD5_Init(&c);
+    assert(r==1);
 
+    //----------ハッシュ値積算
+    for( int x=0; x<WIDTH; x++ ){
+        for( int y=0; ; y++){
+
+            if( tableau[x][y].n == 0 ){
+                break;
+            }else if( tableau[x][y].invisible ){
+                if( tableau[x][y].n == card_unknown ){
+                    r = MD5_Update(&c, "=xx=", strlen("=xx=")); assert(r==1);
+                }else{
+                    sprintf(buf, " =%c%c= ",suit_char[tableau[x][y].suit],
+                                     " 1234567890JQK*"[tableau[x][y].n]);
+                    r = MD5_Update(&c, buf, strlen(buf)); assert(r==1);
+                }
+            }else{
+                sprintf(buf, "  %c%c  ",suit_char[tableau[x][y].suit],
+                                 " 1234567890JQK*"[tableau[x][y].n]);
+                r = MD5_Update(&c, buf, strlen(buf)); assert(r==1);
+            }
+        }
+        r = MD5_Update(&c, "-", 1); assert(r==1);  //区切り
+    }
+
+    //stockのハッシュ積算
+    r = MD5_Update(&c, &stock_remain, sizeof(stock_remain)); assert(r==1);
+
+    //----------ハッシュ値積算　終わり
+
+    
+    r = MD5_Final(getHash, &c);  assert(r==1);
+}
+
+/****************************************************************************/
+bool Board::isLooping()const
+{
+    if( tesuu<=1 ){
+        return false; //0～1手のみではループにならない
+    }
+
+    for( int i=0; i<tesuu-2; i++){
+        if( memcmp(history[tesuu-1].md5sum, history[i].md5sum, MD5_DIGEST_LENGTH)==0 ){
+            printf("loop detected.\n");
+            return true;
+        }
+    }
+    return false;
+}
 /****************************************************************************/
 void Board::search_candidate(Move *candidate, int *num)const
 {
+    *num = 0;
+
+    if( isLooping() ){
+        return; //ループ→選択肢なし→どんずまりとする
+    }
+    
     Katamari k[WIDTH];
     
-    *num = 0;
     for( int from=0; from<WIDTH; from++){
         k[from].init(tableau[from]);
         //printf("%d-%d\n", k[from].top, k[from].bottom);
@@ -370,6 +435,7 @@ void Board::doMove(const Move &m)
     }
 
     //TODO: 山片づけのHistory記録
+    getHash(history[tesuu].md5sum);
     tesuu++;
 
     print();

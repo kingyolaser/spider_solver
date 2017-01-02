@@ -22,7 +22,7 @@ public:
     int   n;
     bool  invisible;
     
-    Card(): suit(spade),n(1),invisible(false){}
+    Card(): suit(suit_unknown),n(1),invisible(false){}
     Card(Suit s, int n_): suit(s), n(n_), invisible(false){}
 
 };
@@ -35,8 +35,8 @@ public:
     int    top;
     int    bottom;
     
-    Katamari():s(spade),position(0),top(0),bottom(0){}
-    Katamari(const Card* card_array):s(spade),position(0),top(0),bottom(0){init(card_array);}
+    Katamari():s(suit_unknown),position(0),top(0),bottom(0){}
+    Katamari(const Card* card_array):s(suit_unknown),position(0),top(0),bottom(0){init(card_array);}
     void init(const Card* card_array);
     
     bool isEmpty()const{return top==0;}
@@ -332,6 +332,7 @@ void Board::search_candidate(Move *candidate, int *num)const
         if( k[to].bottom==13 ){
             for( int from=0; from<WIDTH; from++){
                 if( from==to ){ continue; }
+                if( k[to].s != k[from].s ){continue;}
                 if( k[from].bottom ==13 ){continue;}
                 if( k[from].top<k[to].top && k[to].top <= k[from].bottom ){
                     //↑この条件で、塊全体移動は除外されている。

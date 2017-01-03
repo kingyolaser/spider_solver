@@ -304,6 +304,17 @@ void Board::search_candidate(Move *candidate, int *num)const
     if( isLooping() ){
         return; //ループ→選択肢なし→どんずまりとする
     }
+
+    //同一の塊が無駄な動きを禁則とする
+    if( tesuu>=2 ){
+        const History &h1 = history[tesuu-2];
+        const History &h2 = history[tesuu-1];
+        if( h1.m.to == h2.m.from && h1.m.k.bottom==h2.m.k.bottom){
+            //printf("無駄な動き\n");
+            //print();
+            return;
+        }
+    }
     
     Katamari k[WIDTH];
     

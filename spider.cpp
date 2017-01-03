@@ -84,6 +84,19 @@ void Katamari::init(const Card* card_array)
     bottom   = card_array[position].n;
 }
 /****************************************************************************/
+#define PRIORITY_FOR_KATAZUKE  100
+#define PRIORITY_SAMESUIT      90
+#define PRIORITY_DIFFERENTSUIT 50
+#define PRIORITY_KATAMARI_DOWN 10
+#define PRIORITY_MIN           1
+class Candidate{
+public:
+    Move m;
+    int  priority; //数字が大きいほど優先
+
+    Candidate(): priority(PRIORITY_MIN){}
+};
+/****************************************************************************/
 #define MAX_REMOVE 7  //１手での最大片付山数。draw時に配ったカードで同時に片づけられたケース。
 class History{
 public:
@@ -122,7 +135,7 @@ public:
     void getHash(unsigned char getHash[MD5_DIGEST_LENGTH])const;
     bool isLooping()const;
     
-    void search_candidate(Move *candidate, int *num)const;
+    void search_candidate(Candidate *candidate, int *num)const;
     
     void inquire(int x, int y);
     void doMove(const Move &m);
@@ -290,14 +303,27 @@ bool Board::isLooping()const
 
     for( int i=0; i<tesuu-2; i++){
         if( memcmp(history[tesuu-1].md5sum, history[i].md5sum, MD5_DIGEST_LENGTH)==0 ){
-            printf("loop detected.\n");
+            //printf("loop detected.\n");
             return true;
         }
     }
     return false;
 }
 /****************************************************************************/
-void Board::search_candidate(Move *candidate, int *num)const
+int candidate_compare(const void *a_, const void *b_)
+{
+    const Candidate *a = (Candidate*)a_;
+    const Candidate *b = (Candidate*)b_;
+    
+    if( a->priority < b->priority ){
+        return 1;
+    }else if( a->priority == b->priority ){
+        return 0;
+    }else{
+        return -1;
+    }
+}
+void Board::search_candidate(Candidate *candidate, int *num)const
 {
     *num = 0;
 
@@ -329,9 +355,10 @@ void Board::search_candidate(Move *candidate, int *num)const
             if( from==to ){continue;}
             if( k[from].isEmpty() || k[to].isEmpty() ){continue;}
             if( k[from].bottom +1 == k[to].top ){
-                candidate[*num].from = from;
-                candidate[*num].to   = to;
-                candidate[*num].k    = k[from];
+                candidate[*num].m.from = from;
+                candidate[*num].m.to   = to;
+                candidate[*num].m.k    = k[from];
+                candidate[*num].priority = (k[from].s==k[to].s)? PRIORITY_SAMESUIT : PRIORITY_DIFFERENTSUIT;
                 (*num)++;
             }
         }
@@ -351,11 +378,12 @@ void Board::search_candidate(Move *candidate, int *num)const
                     partial_k.bottom   = k[to].top-1;
                     partial_k.position = k[from].position + (k[from].bottom - k[to].top+1);
                     
-                    candidate[*num].from = from;
-                    candidate[*num].to   = to;
-                    candidate[*num].k    = partial_k;
+                    candidate[*num].m.from = from;
+                    candidate[*num].m.to   = to;
+                    candidate[*num].m.k    = partial_k;
+                    candidate[*num].priority = PRIORITY_FOR_KATAZUKE;
                     (*num)++;
-                    printf("from=%d, to=%d, %d-%d\n", from, to, partial_k.top, partial_k.bottom);
+                    //printf("from=%d, to=%d, %d-%d\n", from, to, partial_k.top, partial_k.bottom);
                     //exit(0);
                 }
             }
@@ -368,20 +396,24 @@ void Board::search_candidate(Move *candidate, int *num)const
     if( (x=getEmpty())!=-1 ){
         for( int from=0; from<WIDTH; from++ ){
             if( k[from].position != 0 ){ //塊は下す価値がある
-                candidate[*num].from = from;
-                candidate[*num].to   = x;
-                candidate[*num].k    = k[from];
+                candidate[*num].m.from = from;
+                candidate[*num].m.to   = x;
+                candidate[*num].m.k    = k[from];
+                candidate[*num].priority = PRIORITY_KATAMARI_DOWN;
                 (*num)++;
             }
         }
     }
     
     if( stock_remain>=1 && !existEmpty() ){
-        candidate[*num].from = -1;
+        candidate[*num].m.from = -1;
         (*num)++;
     }
 
-    printf("candidate num=%d\n", *num);
+    //sort
+    qsort(candidate, *num, sizeof(Candidate), candidate_compare);
+
+    //printf("candidate num=%d\n", *num);
 }
 /****************************************************************************/
 void Board::inquire(int x, int y)
@@ -558,13 +590,14 @@ void solve(Board &board)
         exit(0);
     }
     
-    Move  candidate[100];
+    Candidate  candidate[100];
     int   num;
     board.search_candidate(candidate, &num);
 
     for( int i=0; i<num; i++ ){
-        board.doMove(candidate[i]);
+        board.doMove(candidate[i].m);
         solve(board);
+        //printf("###undoing. tesuu=%d, %d/%d\n", board.tesuu, i+1,num);
         board.undo();
     }
 }
@@ -638,12 +671,12 @@ void FunctionTest::test_test()
     CPPUNIT_ASSERT_EQUAL(2, k.bottom);
     CPPUNIT_ASSERT_EQUAL(1, k.position);
     
-    Move  candidate[100];
+    Candidate  candidate[100];
     int   num;
     board.search_candidate(candidate, &num);
     CPPUNIT_ASSERT_EQUAL(10,num);
 
-    board.doMove(candidate[0]);
+    board.doMove(candidate[0].m);
     board.print();
     board.undo();
     board.print();

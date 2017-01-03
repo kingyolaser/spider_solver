@@ -142,6 +142,7 @@ public:
     void doDraw(History &h);
     void check_remove(int x, History &h);
     void undo();
+    void undo_draw();
 };
 /****************************************************************************/
 int c2i(char c)
@@ -546,35 +547,56 @@ void Board::undo()
     }
 
     if( h.m.isDraw() ){
-        //TODO
-        printf("not supoorted yet.\n");
-        exit(1);
-    }
+        //printf("undoing draw.\n");
+        //print();
+        undo_draw();
+        //print();
+        //printf("undoing draw. done.\n");
+    }else{
 
-    //移動先(undoの移動元)の高さチェック
-    int top_y = -1;
-    for( int y=0; ; y++){ //topのyを算出
-        if( tableau[h.m.to][y].n == card_empty ){
-            top_y = y-1;
-            break;
+        //移動先(undoの移動元)の高さチェック
+        int top_y = -1;
+        for( int y=0; ; y++){ //topのyを算出
+            if( tableau[h.m.to][y].n == card_empty ){
+                top_y = y-1;
+                break;
+            }
+        }
+        assert(tableau[h.m.to][top_y].n == h.m.k.top);
+
+        if( h.frompile_fliped ){
+            //移動元のtopを裏にする。
+            assert(h.m.k.position>=1);
+            tableau[h.m.from][h.m.k.position-1].invisible = true;
+        }
+
+        //塊の逆移動
+        for( int i=h.m.k.bottom-h.m.k.top; i>=0 ;i--){
+            assert(top_y>=0);
+            tableau[h.m.from][h.m.k.position+i] = tableau[h.m.to][top_y];
+            tableau[h.m.to][top_y].n = card_empty;
+            top_y--;
         }
     }
-    assert(tableau[h.m.to][top_y].n == h.m.k.top);
-
-    if( h.frompile_fliped ){
-        //移動元のtopを裏にする。
-        assert(h.m.k.position>=1);
-        tableau[h.m.from][h.m.k.position-1].invisible = true;
-    }
-
-    //塊の逆移動
-    for( int i=h.m.k.bottom-h.m.k.top; i>=0 ;i--){
-        assert(top_y>=0);
-        tableau[h.m.from][h.m.k.position+i] = tableau[h.m.to][top_y];
-        tableau[h.m.to][top_y].n = card_empty;
-        top_y--;
-    }
     tesuu --;
+}
+/****************************************************************************/
+void Board::undo_draw()
+{
+    for( int x=0; x<WIDTH; x++){
+        //高さチェック
+        int top_y = 0;
+        for( int y=0; ; y++){
+            if( tableau[x][y].n==card_empty ){
+                top_y = y-1;
+                break;
+            }
+        }
+        assert(top_y>=1);
+        assert(tableau[x][top_y].n==stock[x][stock_remain].n);
+        tableau[x][top_y].n = card_empty;
+    }
+    stock_remain++;
 }
 /****************************************************************************/
 void solve(Board &board)

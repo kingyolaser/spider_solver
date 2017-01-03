@@ -518,6 +518,9 @@ void Board::check_remove(int x, History &h)
         for( int y=k.position; y<k.position+13; y++){
             tableau[x][y].n=0;
         }
+        h.remove_x[h.remove_num] = x;
+        h.remove_suit[h.remove_num] = k.s;
+        h.removepile_fliped[h.remove_num] = false;
         
         //その下のカードを開く
         if( k.position>=1 ){
@@ -526,24 +529,39 @@ void Board::check_remove(int x, History &h)
                     inquire(x, k.position-1);
                 }
                 tableau[x][k.position-1].invisible = false;
-                h.frompile_fliped = true;
+                h.removepile_fliped[h.remove_num] = true;
             }
         }
+        h.remove_num++;
+        print();
     }
 }
 /****************************************************************************/
 void Board::undo()
 {
-    printf("### undo ###\n");
+    //printf("### undo ###\n");
     
     assert(tesuu>=1);
     History &h = history[tesuu-1];
 
-    //TODO
-    if( h.remove_num>=1 ){
-        //TODO
-        printf("not supoorted yet.\n");
-        exit(1);
+    for( int i=0; i<h.remove_num; i++ ){
+        //print();
+        //printf("undo 片付け\n");
+        int x=h.remove_x[i];
+        int y;
+        for( y=0; tableau[x][y].n!=card_empty; y++ ){} //高さ
+
+        if( h.removepile_fliped[i] ){
+            assert(y>=1);
+            tableau[x][y-1].invisible = true;
+        }
+            
+        for( int n=13; n>=1; n--, y++){
+            tableau[x][y].n    = n;
+            tableau[x][y].suit = h.remove_suit[i];
+            tableau[x][y].invisible = false;
+        }
+        //print();
     }
 
     if( h.m.isDraw() ){

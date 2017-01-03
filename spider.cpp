@@ -206,6 +206,9 @@ void Board::init(int argc, const char* argv[])
 /****************************************************************************/
 void Board::print() const
 {
+    int count[14]={0};
+    int suit_count[4]={0};
+    
     printf("\n");
     for( int y=0; ;y++){
         bool exist = false;
@@ -218,11 +221,15 @@ void Board::print() const
                 }else{
                     printf(" =%c%c= ",suit_char[tableau[x][y].suit],
                                      " 1234567890JQK*"[tableau[x][y].n]);
+                    count[tableau[x][y].n]++;
+                    suit_count[tableau[x][y].suit]++;
                 }
                 exist = true;
             }else{
                 printf("  %c%c  ",suit_char[tableau[x][y].suit],
                                  " 1234567890JQK*"[tableau[x][y].n]);
+                count[tableau[x][y].n]++;
+                suit_count[tableau[x][y].suit]++;
                 exist = true;
             }
         }
@@ -237,9 +244,16 @@ void Board::print() const
         for( int x=0; x<WIDTH; x++){
             printf("%c%c ", suit_char[stock[x][i].suit],
                             " 1234567890JQK*"[stock[x][i].n]);
+            count[stock[x][i].n]++;
+            suit_count[stock[x][i].suit]++;
         }
     }
+    printf("\n");
     
+    printf("cards: %d%d%d%d%d%d%d%d%d%d%d%d%d %d %d %d %d\n",
+        count[1],count[2],count[3],count[4],count[5],count[6],count[7],
+        count[8],count[9],count[10],count[11],count[12],count[13],
+        suit_count[0],suit_count[1],suit_count[2],suit_count[3]);
     printf("\ntesuu=%d\n", tesuu);
 
     //History

@@ -666,6 +666,7 @@ int main(int argc, const char* argv[])
     board.init(argc-1, argv+1);
     board.print();
     solve(board);
+    printf("Sorry, No answer.\n");
     return 0;
 }
 #else

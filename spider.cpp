@@ -553,6 +553,7 @@ void solve(Board &board)
     }
     
     if( board.isComplete() ){
+        board.print();
         printf("Conguraturation!!\n");
         exit(0);
     }
@@ -574,6 +575,7 @@ int main(int argc, const char* argv[])
     Board board;
     
     board.init(argc-1, argv+1);
+    board.print();
     solve(board);
     return 0;
 }

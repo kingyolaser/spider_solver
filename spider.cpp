@@ -351,11 +351,12 @@ void Board::search_candidate(Candidate *candidate, int *num)const
         const History &h1 = history[tesuu-2];
         const History &h2 = history[tesuu-1];
         if( ! h1.m.isDraw() && !h2.m.isDraw()
-            && h1.m.to == h2.m.from && h1.m.k.bottom==h2.m.k.bottom
-            && !h1.frompile_fliped ){
-            //printf("無駄な動き\n");
-            //print();
-            return;
+           && h1.m.to == h2.m.from && h1.m.k.bottom==h2.m.k.bottom ){
+            if( h1.frompile_fliped && h2.m.to==h1.m.from ){
+                //許可する。動かして下めくって、再び戻すケース
+            }else{
+                return; //それ以外は禁則
+            }
         }
     }
     

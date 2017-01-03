@@ -545,7 +545,12 @@ void Board::undo()
 /****************************************************************************/
 void solve(Board &board)
 {
-    board.print();
+    static long count =0;
+    count++;
+    if( count%65536==0){
+        printf("now examing...");
+        board.print();
+    }
     
     if( board.isComplete() ){
         printf("Conguraturation!!\n");

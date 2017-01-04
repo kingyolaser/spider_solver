@@ -460,7 +460,7 @@ void Board::doMove(const Move &m)
     history[tesuu].m = m;
 
     if( ! m.isDraw() ){
-        printf("Moving: %d->%d\n", m.from, m.to);
+        //printf("Moving: %d->%d\n", m.from, m.to);
         //toの高さ
         int to_hight;
         for( to_hight=0; ; to_hight++ ){
@@ -500,13 +500,13 @@ void Board::doMove(const Move &m)
     getHash(history[tesuu].md5sum);
     tesuu++;
 
-    print();
+    //print();
 }
 
 /****************************************************************************/
 void Board::doDraw(History &h)
 {
-    printf("### doDraw ###\n");
+    //printf("### doDraw ###\n");
     assert(stock_remain>=1);
     
     
@@ -637,7 +637,7 @@ void solve(Board &board)
     static long count =0;
     count++;
     if( count%65536==0){
-        printf("now examing...");
+        printf("now examing pattern No.%ld...", count);
         board.print();
     }
     

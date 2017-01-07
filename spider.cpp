@@ -367,21 +367,6 @@ void Board::search_candidate(Candidate *candidate, int *num)const
         //printf("%d-%d\n", k[from].top, k[from].bottom);
     }
     
-    //塊全体移動のチェック。suit違っても候補。
-    for( int from=0; from<WIDTH; from++){
-        for( int to=0; to<WIDTH; to++){
-            if( from==to ){continue;}
-            if( k[from].isEmpty() || k[to].isEmpty() ){continue;}
-            if( k[from].bottom +1 == k[to].top ){
-                candidate[*num].m.from = from;
-                candidate[*num].m.to   = to;
-                candidate[*num].m.k    = k[from];
-                candidate[*num].priority = (k[from].s==k[to].s)? PRIORITY_SAMESUIT : PRIORITY_DIFFERENTSUIT;
-                (*num)++;
-            }
-        }
-    }
-    
     //kingからの山に積み重ねられるかチェック
     //塊全体でなくてよい。同一suit必須
     for( int to=0; to<WIDTH; to++){
@@ -407,6 +392,26 @@ void Board::search_candidate(Candidate *candidate, int *num)const
             }
         }
     }
+    if( *num!=0 ){  //この時点で候補があったら打ち止め
+        return;
+    }
+
+    //まだ候補ゼロ
+    //塊全体移動のチェック。suit違っても候補。
+    for( int from=0; from<WIDTH; from++){
+        for( int to=0; to<WIDTH; to++){
+            if( from==to ){continue;}
+            if( k[from].isEmpty() || k[to].isEmpty() ){continue;}
+            if( k[from].bottom +1 == k[to].top ){
+                candidate[*num].m.from = from;
+                candidate[*num].m.to   = to;
+                candidate[*num].m.k    = k[from];
+                candidate[*num].priority = (k[from].s==k[to].s)? PRIORITY_SAMESUIT : PRIORITY_DIFFERENTSUIT;
+                (*num)++;
+            }
+        }
+    }
+    
     
     //empty spaceがある場合、塊を下す手を列挙
     //

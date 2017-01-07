@@ -428,9 +428,16 @@ void Board::search_candidate(Candidate *candidate, int *num)const
         }
     }
     
-    if( stock_remain>=1 && !existEmpty() ){
-        candidate[*num].m.from = -1;
-        (*num)++;
+    if( stock_remain>=1 ){
+        if( !existEmpty() ){
+            candidate[*num].m.from = -1;
+            (*num)++;
+        }else if(*num==0){
+            print();
+            printf("ほとんど解決だがstock消化要\n");
+            printf("あとは自分でやってください。\n");
+            exit(0);
+        }
     }
 
     //sort

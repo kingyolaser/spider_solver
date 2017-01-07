@@ -643,7 +643,7 @@ void solve(Board &board)
     
     if( board.isComplete() ){
         board.print();
-        printf("Conguraturation!!\n");
+        printf("Conguraturation!! examined boards=%ld\n", count);
         exit(0);
     }
     

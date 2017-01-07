@@ -436,6 +436,32 @@ void Board::search_candidate(Candidate *candidate, int *num)const
     //sort
     qsort(candidate, *num, sizeof(Candidate), candidate_compare);
 
+#if 1
+    //この時点で、同一suitへの移動があったら打ち止め
+    //優先度topが同一suit連結の場合、それ以下の優先度はカットする。
+    if( *num>=1 && candidate[0].priority>=PRIORITY_SAMESUIT ){
+        for( int i=1; i<*num; i++){
+            if( candidate[i].priority<PRIORITY_SAMESUIT ){
+
+                //debug
+                #if 0
+                print();
+                for( int j=0; j<*num; j++){
+                    printf("%d%d:", candidate[j].m.from, candidate[j].m.to);
+                }
+                printf("\n");
+                printf("cut low priority move.\n");
+                printf("candidate num= %d -> %d\n", *num,i);
+                exit(1);
+                #endif
+
+                *num=i;
+                return;
+            }
+        }
+    }
+#endif
+
     //printf("candidate num=%d\n", *num);
 }
 /****************************************************************************/

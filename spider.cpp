@@ -529,7 +529,7 @@ void Board::check_remove(int x, History &h)
 {
     Katamari k(tableau[x]);
     if( k.top==1 && k.bottom==13 ){
-        printf("Removing x=%d\n", x);
+        //printf("Removing x=%d\n", x);
         for( int y=k.position; y<k.position+13; y++){
             tableau[x][y].n=0;
         }
@@ -548,7 +548,7 @@ void Board::check_remove(int x, History &h)
             }
         }
         h.remove_num++;
-        print();
+        //print();
     }
 }
 /****************************************************************************/

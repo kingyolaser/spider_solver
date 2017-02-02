@@ -520,6 +520,7 @@ void Board::doMove(const Move &m)
         if( m.k.position >=1 ){
             if( tableau[m.from][m.k.position-1].invisible ){
                 if( tableau[m.from][m.k.position-1].n == card_unknown ){
+                    printf("Moved %d->%d\n", m.from, m.to);
                     inquire(m.from, m.k.position-1);
                 }
                 tableau[m.from][m.k.position-1].invisible = false;

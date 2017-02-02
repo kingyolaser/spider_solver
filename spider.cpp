@@ -360,6 +360,22 @@ void Board::search_candidate(Candidate *candidate, int *num)const
         }
     }
     
+    //独立したMoveは、Fromが小さいものを先に行うルールとする。
+    //反したMoveの場合は禁則
+    if( tesuu>=2 ){
+        const History &h1 = history[tesuu-2];
+        const History &h2 = history[tesuu-1];
+        if( ! h1.m.isDraw() && !h2.m.isDraw()
+           && h1.m.from != h2.m.from && h1.m.to != h2.m.to
+           && h1.m.from != h2.m.to   && h1.m.to != h2.m.from ){//互いに独立
+            if( h1.m.from < h2.m.from ){
+                //許可する。
+            }else{
+                return; //禁則
+            }
+        }
+    }
+
     Katamari k[WIDTH];
     
     for( int from=0; from<WIDTH; from++){

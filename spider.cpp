@@ -121,6 +121,7 @@ public:
     int   tesuu;
     Card  stock[WIDTH][5];
     int   stock_remain;
+    int   kataduke;
     History  history[HISTORY_MAX];
 
     Board(){init();}
@@ -170,6 +171,7 @@ void Board::init()
     tesuu = 0;
     memset(stock, 0, sizeof(stock));
     stock_remain = 0;
+    kataduke = 0;
 }
 /****************************************************************************/
 void Board::init(int argc, const char* argv[])
@@ -254,6 +256,7 @@ void Board::print() const
         count[1],count[2],count[3],count[4],count[5],count[6],count[7],
         count[8],count[9],count[10],count[11],count[12],count[13],
         suit_count[0],suit_count[1],suit_count[2],suit_count[3]);
+    printf("kataduke=%d",kataduke);
     printf("\ntesuu=%d\n", tesuu);
 
     //History
@@ -603,6 +606,7 @@ void Board::check_remove(int x, History &h)
             }
         }
         h.remove_num++;
+        kataduke++;
         //print();
     }
 }
@@ -631,6 +635,7 @@ void Board::undo()
             tableau[x][y].suit = h.remove_suit[i];
             tableau[x][y].invisible = false;
         }
+        kataduke--;
         //print();
     }
 

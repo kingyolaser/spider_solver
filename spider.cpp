@@ -84,17 +84,24 @@ void Katamari::init(const Card* card_array)
     bottom   = card_array[position].n;
 }
 /****************************************************************************/
-#define PRIORITY_FOR_KATAZUKE  100
-#define PRIORITY_SAMESUIT      90
-#define PRIORITY_DIFFERENTSUIT 50
-#define PRIORITY_KATAMARI_DOWN 10
+#define PRIORITY_TYPE_MASK     0xFFFF0000
+
+#define PRIORITY_TYPE_MOVE     0x40000000
+#define PRIORITY_TYPE_DRAW     0x20000000
+
+#define PRIORITY_FOR_KATAZUKE  0x40800000
+
+#define PRIORITY_SAMESUIT      0x40400000
+#define PRIORITY_DIFFERENTSUIT 0x40200000
+#define PRIORITY_KATAMARI_DOWN 0x40100000
+#define PRIORITY_DRAW          0x20010000
 #define PRIORITY_MIN           1
 class Candidate{
 public:
     Move m;
-    int  priority; //数字が大きいほど優先
+    int  type_and_priority; //数字が大きいほど優先
 
-    Candidate(): priority(PRIORITY_MIN){}
+    Candidate(): type_and_priority(PRIORITY_MIN){}
 };
 /****************************************************************************/
 #define MAX_REMOVE 7  //１手での最大片付山数。draw時に配ったカードで同時に片づけられたケース。
@@ -333,9 +340,9 @@ int candidate_compare(const void *a_, const void *b_)
     const Candidate *a = (Candidate*)a_;
     const Candidate *b = (Candidate*)b_;
     
-    if( a->priority < b->priority ){
+    if( a->type_and_priority < b->type_and_priority ){
         return 1;
-    }else if( a->priority == b->priority ){
+    }else if( a->type_and_priority == b->type_and_priority ){
         return 0;
     }else{
         return -1;
@@ -403,7 +410,7 @@ void Board::search_candidate(Candidate *candidate, int *num)const
                     candidate[*num].m.from = from;
                     candidate[*num].m.to   = to;
                     candidate[*num].m.k    = partial_k;
-                    candidate[*num].priority = PRIORITY_FOR_KATAZUKE;
+                    candidate[*num].type_and_priority = PRIORITY_FOR_KATAZUKE;
                     (*num)++;
                     //printf("from=%d, to=%d, %d-%d\n", from, to, partial_k.top, partial_k.bottom);
                     //exit(0);
@@ -425,7 +432,7 @@ void Board::search_candidate(Candidate *candidate, int *num)const
                 candidate[*num].m.from = from;
                 candidate[*num].m.to   = to;
                 candidate[*num].m.k    = k[from];
-                candidate[*num].priority = (k[from].s==k[to].s)? PRIORITY_SAMESUIT : PRIORITY_DIFFERENTSUIT;
+                candidate[*num].type_and_priority = (k[from].s==k[to].s)? PRIORITY_SAMESUIT : PRIORITY_DIFFERENTSUIT;
                 (*num)++;
             }
         }
@@ -441,7 +448,7 @@ void Board::search_candidate(Candidate *candidate, int *num)const
                 candidate[*num].m.from = from;
                 candidate[*num].m.to   = x;
                 candidate[*num].m.k    = k[from];
-                candidate[*num].priority = PRIORITY_KATAMARI_DOWN;
+                candidate[*num].type_and_priority = PRIORITY_KATAMARI_DOWN;
                 (*num)++;
             }
         }
@@ -450,6 +457,7 @@ void Board::search_candidate(Candidate *candidate, int *num)const
     if( stock_remain>=1 ){
         if( !existEmpty() ){
             candidate[*num].m.from = -1;
+            candidate[*num].type_and_priority = PRIORITY_DRAW;
             (*num)++;
         }else if(*num==0){
             print();
@@ -465,9 +473,9 @@ void Board::search_candidate(Candidate *candidate, int *num)const
 #if 1
     //この時点で、同一suitへの移動があったら打ち止め
     //優先度topが同一suit連結の場合、それ以下の優先度はカットする。
-    if( *num>=1 && candidate[0].priority>=PRIORITY_SAMESUIT ){
+    if( *num>=1 && candidate[0].type_and_priority>=PRIORITY_SAMESUIT ){
         for( int i=1; i<*num; i++){
-            if( candidate[i].priority<PRIORITY_SAMESUIT ){
+            if( candidate[i].type_and_priority<PRIORITY_SAMESUIT ){
 
                 //debug
                 #if 0

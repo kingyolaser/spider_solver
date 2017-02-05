@@ -374,6 +374,24 @@ void Board::search_candidate(Candidate *candidate, int *num)const
         }
     }
     
+#if 1
+    //同一スートを集めていく２手は、2通りの実質同一の２種の手がある。
+    //・２つの塊をあつめて、最終目的地に移動
+    //・２つの塊を順番に最終目的地に積む
+    //後者のみ許可し、前者を禁則とする。これにより解析ケース削減。
+    if( tesuu>=2 ){
+        const History &h1 = history[tesuu-2];
+        const History &h2 = history[tesuu-1];
+        int   type1 = h1.m.type_and_priority & PRIORITY_TYPE_MASK;
+        int   type2 = h2.m.type_and_priority & PRIORITY_TYPE_MASK;
+        if( type1 == PRIORITY_SAMESUIT && type2 == PRIORITY_SAMESUIT ){
+            if( ! h1.m.isDraw() && !h2.m.isDraw()
+               && h1.m.to == h2.m.from && h2.m.to != h1.m.from ){
+                return; //禁則
+            }
+        }
+    }
+#endif
     //独立したMoveは、Fromが小さいものを先に行うルールとする。
     //反したMoveの場合は禁則
     if( tesuu>=2 ){

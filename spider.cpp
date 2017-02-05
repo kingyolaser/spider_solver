@@ -7,6 +7,9 @@
 #include <openssl/md5.h>
 
 /****************************************************************************/
+long examined_count =0;
+
+/****************************************************************************/
 typedef enum{
     spade, heart, diamond, club, suit_unknown=-1,
 }Suit;
@@ -724,16 +727,15 @@ void Board::undo_draw()
 /****************************************************************************/
 void solve(Board &board)
 {
-    static long count =0;
-    count++;
-    if( count%65536==0){
-        printf("now examing pattern No.%ld...", count);
+    examined_count++;
+    if( examined_count%65536==0){
+        printf("now examing pattern No.%ld...", examined_count);
         board.print();
     }
     
     if( board.isComplete() ){
         board.print();
-        printf("Conguraturation!! examined boards=%ld\n", count);
+        printf("Conguraturation!! examined boards=%ld\n", examined_count);
         exit(0);
     }
     

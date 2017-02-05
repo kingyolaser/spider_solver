@@ -121,7 +121,7 @@ public:
 class Board{
 public:
     enum{
-        WIDTH = 10, STOCK_MAX=5, HISTORY_MAX=300,
+        WIDTH = 10, STOCK_MAX=5, HISTORY_MAX=512,
     };
 
     Card  tableau[WIDTH][104];
@@ -354,6 +354,10 @@ void Board::search_candidate(Candidate *candidate, int *num)const
 
     if( isLooping() ){
         return; //ループ→選択肢なし→どんずまりとする
+    }
+    
+    if( tesuu >=HISTORY_MAX){
+        return; //手数限界：たぶん初期のほうで誤った手を指して、泥沼
     }
 
     //同一の塊が無駄な動きを禁則とする

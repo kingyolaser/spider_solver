@@ -395,7 +395,9 @@ void Board::search_candidate(Candidate *candidate, int *num)const
         }
     }
 #endif
-    //独立したMoveは、Fromが小さいものを先に行うルールとする。
+
+    //独立したMoveは、おなじTypeならFromが小さいものを先に行う
+    //同一TYPE同士の場合のみ判定
     //反したMoveの場合は禁則
     if( tesuu>=2 ){
         const History &h1 = history[tesuu-2];
@@ -403,13 +405,21 @@ void Board::search_candidate(Candidate *candidate, int *num)const
         if( ! h1.m.isDraw() && !h2.m.isDraw()
            && h1.m.from != h2.m.from && h1.m.to != h2.m.to
            && h1.m.from != h2.m.to   && h1.m.to != h2.m.from ){//互いに独立
-            if( h1.m.from < h2.m.from ){
-                //許可する。
-            }else{
-                return; //禁則
+
+            int   type1 = h1.m.type_and_priority & PRIORITY_TYPE_MASK;
+            int   type2 = h2.m.type_and_priority & PRIORITY_TYPE_MASK;
+            if( type1 == type2 ){
+                if( h1.m.from < h2.m.from ){
+                    //許可する。
+                }else{
+                    return; //禁則
+                }
             }
         }
     }
+    
+    //禁則チェック終わり
+    //ここから候補手の列挙処理
 
     Katamari k[WIDTH];
     

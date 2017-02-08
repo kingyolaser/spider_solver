@@ -4,10 +4,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <getopt.h>
 #include <openssl/md5.h>
 
 /****************************************************************************/
 long examined_count =0;
+int  option_goal_remove = 0;
 
 /****************************************************************************/
 typedef enum{
@@ -136,7 +138,7 @@ public:
 
     Board(){init();}
     void init();
-    void init(int argc, const char* argv[]);  //mainに渡されるものからargv[0]を除いて渡すこと
+    void init(int argc, char* const argv[]);  //mainに渡されるものからargv[0]を除いて渡すこと
     void print()const;
 
     bool isComplete()const{for(int x=0;x<WIDTH;x++)if(tableau[x][0].n!=0)return false; return true;}
@@ -184,7 +186,7 @@ void Board::init()
     kataduke = 0;
 }
 /****************************************************************************/
-void Board::init(int argc, const char* argv[])
+void Board::init(int argc, char* const argv[])
 {
     assert( argc>=11 );
     init();
@@ -205,7 +207,7 @@ void Board::init(int argc, const char* argv[])
     }
 
     //ストックの設定
-    assert(strcmp(argv[WIDTH],"-")==0);
+    assert(strcmp(argv[WIDTH],"_")==0);
     for( int i=argc-1; i>=WIDTH+1; i--){
         assert(strlen(argv[i])==WIDTH*2);
         for( int x=0; x<WIDTH; x++){
@@ -650,7 +652,14 @@ void Board::check_remove(int x, History &h)
         }
         h.remove_num++;
         kataduke++;
-        //print();
+
+        if( option_goal_remove != 0 ){
+            if( kataduke >= option_goal_remove ){
+                print();
+                printf("Conguraturation!! examined boards=%ld\n", examined_count);
+                exit(0);
+            }
+        }
     }
 }
 /****************************************************************************/
@@ -762,11 +771,29 @@ void solve(Board &board)
 }
 /****************************************************************************/
 #ifndef TEST
-int main(int argc, const char* argv[])
+int main(int argc, char* const argv[])
 {
+    int opt;
+    
+    opterr=0;
+    
+    while((opt=getopt(argc, argv,"r:")) != -1 ){
+        switch( opt ){
+        case 'r':
+            option_goal_remove = atoi(optarg);
+            printf("%d個の山片づけでゴール\n", option_goal_remove);
+            break;
+            
+        default:
+            printf("Unknown arg.\n");
+            break;
+        }
+    }
+
+
     Board board;
     
-    board.init(argc-1, argv+1);
+    board.init(argc-optind, argv+optind);
     board.print();
     solve(board);
     printf("Sorry, No answer.\n");

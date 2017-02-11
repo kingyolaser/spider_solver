@@ -635,6 +635,15 @@ void Board::doMove(const Move &m)
     getHash(history[tesuu].md5sum);
     tesuu++;
 
+    //山片づけミッションの、クリアチェック
+    if( option_goal_remove != 0 ){
+        if( kataduke >= option_goal_remove ){
+            print();
+            printf("Conguraturation!! examined boards=%ld\n", examined_count);
+            exit(0);
+        }
+    }
+
     //print();
 }
 
@@ -685,13 +694,6 @@ void Board::check_remove(int x, History &h)
         h.remove_num++;
         kataduke++;
 
-        if( option_goal_remove != 0 ){
-            if( kataduke >= option_goal_remove ){
-                print();
-                printf("Conguraturation!! examined boards=%ld\n", examined_count);
-                exit(0);
-            }
-        }
     }
 }
 /****************************************************************************/

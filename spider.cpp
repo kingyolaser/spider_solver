@@ -277,7 +277,7 @@ void Board::print() const
         if( history[i].m.isDraw() ){
             printf("draw:");
         }else{
-            printf("%d%d:", history[i].m.from, history[i].m.to);
+            printf("%d%d:", (history[i].m.from+1)%10, (history[i].m.to+1)%10);
         }
     }
     printf("\n");
@@ -543,7 +543,7 @@ void Board::inquire(int x, int y)
     Card ret;
     char buf[20];
     for(;;){
-        printf("input(%d,%d)> ",x,y);
+        printf("input(%d,%d)> ",x+1,y+1);
         fgets(buf, sizeof(buf), stdin );
         ret.suit = c2s(buf[0]);
         ret.n    = c2i(buf[1]);
@@ -584,7 +584,7 @@ void Board::doMove(const Move &m)
         if( m.k.position >=1 ){
             if( tableau[m.from][m.k.position-1].invisible ){
                 if( tableau[m.from][m.k.position-1].n == card_unknown ){
-                    printf("Moved %d->%d\n", m.from, m.to);
+                    printf("Moved %d->%d\n", m.from+1, m.to+1);
                     inquire(m.from, m.k.position-1);
                 }
                 tableau[m.from][m.k.position-1].invisible = false;

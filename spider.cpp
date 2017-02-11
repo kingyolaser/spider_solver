@@ -277,7 +277,11 @@ void Board::print() const
         if( history[i].m.isDraw() ){
             printf("draw:");
         }else{
-            printf("%d%d:", (history[i].m.from+1)%10, (history[i].m.to+1)%10);
+            if( history[i].m.from+1==10 || history[i].m.to+1==10 ){
+                printf("%d-%d:", history[i].m.from+1, history[i].m.to+1);
+            }else{
+                printf("%d%d:", (history[i].m.from+1)%10, (history[i].m.to+1)%10);
+            }
         }
     }
     printf("\n");

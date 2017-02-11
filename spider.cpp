@@ -471,6 +471,38 @@ void Board::search_candidate(Candidate *candidate, int *num)const
                 candidate[*num].m.k    = k[from];
                 candidate[*num].m.type_and_priority = (k[from].s==k[to].s)? PRIORITY_SAMESUIT : PRIORITY_DIFFERENTSUIT;
                 (*num)++;
+                
+                //この手が、同一suit重ねで、かつfrom.bottomが同じものがなければ、一択状態
+                if( candidate[*num-1].m.type_and_priority == PRIORITY_SAMESUIT ){
+                    bool exist_samebottom = false;
+                    for( int i=0; i<WIDTH; i++ ){
+                        if( i==from ){ continue; }
+                        if( k[i].bottom == k[from].bottom &&  k[i].s == k[from].s ){
+                            exist_samebottom = true;
+                            break;
+                        }
+                    }
+                    if( exist_samebottom==false ){  //この手一択、打ち止め
+                        candidate[0] = candidate[*num-1];
+                        *num = 1;
+                        #ifdef DEBUG
+                        print();
+                        printf("%d->%d, bottom=%d\n", candidate[0].m.from, candidate[0].m.to, candidate[0].m.k.bottom);
+                        char  buf[10];
+                        fgets(buf,10,stdin);
+                        #endif
+                        return;
+                    }
+                    #ifdef DEBUG
+                    else{
+                        print();
+                        printf("分かれ道\n");
+                        printf("%d->%d, bottom=%d\n", candidate[0].m.from, candidate[0].m.to, candidate[0].m.k.bottom);
+                        char  buf[10];
+                        fgets(buf,10,stdin);
+                    }
+                    #endif
+                }
             }
         }
     }

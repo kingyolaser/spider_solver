@@ -364,6 +364,12 @@ void Board::search_candidate(Candidate *candidate, int *num)const
     if( tesuu >=HISTORY_MAX){
         return; //手数限界：たぶん初期のほうで誤った手を指して、泥沼
     }
+    
+    if( examined_count > 10000 ){
+        print();
+        printf("あきらめた\n");
+        throw 0; //あきらめる
+    }
 
     //同一の塊が無駄な動きを禁則とする
     if( tesuu>=2 ){
@@ -378,47 +384,7 @@ void Board::search_candidate(Candidate *candidate, int *num)const
             }
         }
     }
-    
-#if 1
-    //同一スートを集めていく２手は、2通りの実質同一の２種の手がある。
-    //・２つの塊をあつめて、最終目的地に移動
-    //・２つの塊を順番に最終目的地に積む
-    //後者のみ許可し、前者を禁則とする。これにより解析ケース削減。
-    if( tesuu>=2 ){
-        const History &h1 = history[tesuu-2];
-        const History &h2 = history[tesuu-1];
-        int   type1 = h1.m.type_and_priority & PRIORITY_TYPE_MASK;
-        int   type2 = h2.m.type_and_priority & PRIORITY_TYPE_MASK;
-        if( type1 == PRIORITY_SAMESUIT && type2 == PRIORITY_SAMESUIT ){
-            if( ! h1.m.isDraw() && !h2.m.isDraw()
-               && h1.m.to == h2.m.from && h2.m.to != h1.m.from ){
-                return; //禁則
-            }
-        }
-    }
-#endif
 
-    //独立したMoveは、おなじTypeならFromが小さいものを先に行う
-    //同一TYPE同士の場合のみ判定
-    //反したMoveの場合は禁則
-    if( tesuu>=2 ){
-        const History &h1 = history[tesuu-2];
-        const History &h2 = history[tesuu-1];
-        if( ! h1.m.isDraw() && !h2.m.isDraw()
-           && h1.m.from != h2.m.from && h1.m.to != h2.m.to
-           && h1.m.from != h2.m.to   && h1.m.to != h2.m.from ){//互いに独立
-
-            int   type1 = h1.m.type_and_priority & PRIORITY_TYPE_MASK;
-            int   type2 = h2.m.type_and_priority & PRIORITY_TYPE_MASK;
-            if( type1 == type2 ){
-                if( h1.m.from < h2.m.from ){
-                    //許可する。
-                }else{
-                    return; //禁則
-                }
-            }
-        }
-    }
     
     //禁則チェック終わり
     //ここから候補手の列挙処理
@@ -778,6 +744,19 @@ void Board::undo_draw()
     stock_remain++;
 }
 /****************************************************************************/
+void suffle_candidates(Candidate candidate[], int num)
+{
+    for( int i=0; i<num-1; i++ ){
+        int selection = num-i;
+        int selected = rand() % selection; //0～num-i-1の範囲
+        
+        //[i]と[i+selected] を交換
+        Candidate swap_c = candidate[i];
+        candidate[i] = candidate[i+selected];
+        candidate[i+selected] = swap_c;
+    }
+}
+/****************************************************************************/
 void solve(Board &board)
 {
     examined_count++;
@@ -795,6 +774,9 @@ void solve(Board &board)
     Candidate  candidate[100];
     int   num;
     board.search_candidate(candidate, &num);
+    
+    //手をランダムにシャッフル
+    suffle_candidates(candidate, num);
 
     for( int i=0; i<num; i++ ){
         board.doMove(candidate[i].m);
@@ -827,9 +809,19 @@ int main(int argc, char* const argv[])
 
     Board board;
     
-    board.init(argc-optind, argv+optind);
-    board.print();
-    solve(board);
+    for(;;){
+        examined_count = 0;
+        try{
+            board.init(argc-optind, argv+optind);
+            board.print();
+            solve(board);
+            printf("解が見つからない。");
+            exit(1);
+        }
+        catch(...){
+            printf("あきらめて最初から\n");
+        }
+    }
     printf("Sorry, No answer.\n");
     return 0;
 }

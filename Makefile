@@ -44,16 +44,37 @@ test4: spider #スタークラブ spider 上級II 最終問題
 #real    0m0.128s
 
 test5: spider  #スタークラブ　トーナメント　FINAL
-	./$< -r1 \
+	time ./$< -r1 \
 	     "xc2xcqxc3xs9xs4 hj" "xh5xckxdjxsaxs4 d0" "xcaxd3xs7xd8xs7 dj" \
 	     "xh5xsjxc6xd4xdq h0" "xs5xh7xckxd0 hj"    "xd2xd5xhqxh9 c5"    \
-	     "xxxxh3xdkxd9 c8"    "xc7xd5xhaxd7 c9"    "xxxxsqxd6xsq h6"    \
+	     "xhaxh3xdkxd9 c8"    "xc7xd5xhaxd7 c9"    "xh2xsqxd6xsq h6"    \
 	     "xcaxdaxdqxh4 da" "_"  \
 	     "skcqh7s8hkskd8s3s2d3" \
 	     "d7s3sjh8c8c0h8hqd4c2" \
 	     "h2c6s6h0h6c4c5h4dkhk" \
 	     "s0s2s8c7s6sacjh3h9c0" \
 	     "d2s0s9c3c4d9s5c9cjd6"
+#上記解答例
+#tesuu=140
+#history: 30:67:61:12:36:26:58:50:05:08:27:26:26:23:draw:87:78:73:27:28:76:72:62:76:draw:03:18:10:81:91:98:18:20:26:25:81:91:92:09:34:59:05:43:50:75:draw:56:59:61:46:draw:51:96:69:68:46:34:83:draw:21:21:34:04:08:78:07:76:76:79:27:29:32:31:35:73:38:43:75:97:39:35:91:90:39:32:62:46:43:04:29:40:52:15:21:62:63:23:12:51:25:32:36:76:17:51:75:87:38:80:04:03:08:78:17:43:51:75:17:34:71:67:07:03:02:64:24:90:89:83:38:08:60:62:06:16:10:21:12:17:10:
+#Conguraturation!! examined boards=725
+
+
+#http://www.tranzoa.net/~alex/plspider.htm
+#の、解けないといわれているもの③
+test6: spider
+	time ./$< -r1 \
+	     "xh0xdkxd4xh4xd2 c4" "xh6xd4xs0xc6 h4" "xskxc8xh3xdk d3" \
+	     "xcjxd9xsjxd5xhk s2" "xs3xd7xc9xh7 d8" "xs7xd5xs5xs4 sk" \
+	     "xc4xs7xc2xdjxck d0" "xcaxc0xd0xsa h8" "xs9xc3xh3xsq s6" \
+	     "xc0xs4xc7xd7xdq hk" "_"  \
+	     "djh6h9d6d6s8h2sqs8c2" \
+	     "cjd2c5hjs6h7c3s3d3d8" \
+	     "cas9c5has5d9cqc9dqh8" \
+	     "s0h2dahjhqh5hah9s2c6" \
+	     "hqh5c7c8dah0sacqcksj"
+
+
 
 ut: spider_test
 	./$< --test
